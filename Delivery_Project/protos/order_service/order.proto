@@ -11,6 +11,11 @@ service OrderService {
     rpc Update(UpdateOrderRequest) returns (Response) {}
     rpc UpdateStatus(UpdateOrderStatusRequest) returns (Response) {}
     rpc Delete(IdRequest) returns (Response) {}
+    rpc GetOrderStatus( OrderIdRequest) returns (OrderStatusResponse){}
+
+    rpc GetAllAcceptedOrders(IdRequest) returns (Order) {}
+    rpc GetAllAcceptableOrders(IdRequest) returns (Order) {}
+
 }
 
 // order_type :: delivery and pick_up
@@ -60,7 +65,6 @@ message UpdateOrderRequest {
 }
 
 message UpdateOrderStatusRequest {
-    int32 id = 1;
     string order_id = 2;
     string status = 3;
 }
@@ -88,7 +92,13 @@ message Response {
 }
 
 message IdRequest {
-    string id = 1;
+    int32 id = 1;
+}
+message OrderIdRequest {
+    int32 order_id = 1;
+}
+message OrderStatusResponse {
+    string status = 1;
 }
 
 message OrderProducts {

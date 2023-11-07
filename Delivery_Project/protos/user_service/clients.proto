@@ -22,8 +22,6 @@ message CreateClientsRequest {
     string birth_date =5;
     string discount_type =6;
     double discount_amount =7;
-    int64 total_orders_count = 8;
-    double total_orders_sum = 9;
 }
 
 message Clients {

@@ -9,6 +9,7 @@ service BranchService {
     rpc List(ListBranchRequest) returns (ListBranchResponse) {}
     rpc Update(UpdateBranchRequest) returns (Response) {}
     rpc Delete(IdRequest) returns (Response) {}
+    rpc ListActive(ListActiveBranchRequest) returns (ListBranchResponse) {}
 }
 
 message CreateBranchRequest {
@@ -59,6 +60,11 @@ message ListBranchRequest {
     string created_at_to = 5;
 
 }
+message ListActiveBranchRequest {
+    int32 limit = 1;
+    int32 page = 2;
+    string date=3;
+}
 
 message ListBranchResponse {
      repeated Branch branches = 1;
@@ -70,5 +76,5 @@ message Response {
 }
 
 message IdRequest {
-    string id = 1;
+    int32 id = 1;
 }
