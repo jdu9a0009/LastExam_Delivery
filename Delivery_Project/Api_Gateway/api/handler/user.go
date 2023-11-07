@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	user_service "api-gateway-service/genproto/user_service"
+	"api-gateway-service/pkg/helper"
+	"api-gateway-service/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,6 +32,13 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 		h.handlerResponse(ctx, "CreateUser", http.StatusBadRequest, err.Error())
 		return
 	}
+	hashedPass, err := helper.GeneratePasswordHash(user.Password)
+	if err != nil {
+		h.log.Error("error while generating hash password:", logger.Error(err))
+		ctx.JSON(http.StatusBadRequest, "invalid body")
+		return
+	}
+	user.Password = string(hashedPass)
 
 	resp, err := h.services.UserService().Create(ctx, &user_service.CreateUsersRequest{
 		Firstname: user.Firstname,
@@ -50,6 +59,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 }
 
 // GetAllUser godoc
+// @Security ApiKeyAuth
 // @Router       /v1/user [get]
 // @Summary      GetAll User
 // @Description  get user
@@ -58,7 +68,7 @@ func (h *Handler) CreateUser(ctx *gin.Context) {
 // @Produce      json
 // @Param        limit    query     int  false  "limit for response"  Default(10)
 // @Param		 page     query     int  false  "page for response"   Default(1)
-// @Param        name     query     string false "search by name"
+// @Param        name     query     string false "search by firstname,lastname and phone"
 // @Param        created_at_from     query     string false "search by created_at_from"
 // @Param        created_at_to     query     string false "search by created_at_to"
 // @Success      200  {array}   user_service.ListUsersResponse
@@ -95,6 +105,7 @@ func (h *Handler) GetListUser(ctx *gin.Context) {
 }
 
 // GetUser godoc
+// @Security ApiKeyAuth
 // @Router       /v1/user/{id} [get]
 // @Summary      Get a user by ID
 // @Description  Retrieve a user by its unique identifier
@@ -107,9 +118,14 @@ func (h *Handler) GetListUser(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetUser(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.UserService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.UserService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error user GetById", http.StatusBadRequest, err.Error())
 		return
@@ -119,6 +135,7 @@ func (h *Handler) GetUser(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/user/{id} [put]
 // @Summary      Update an existing user
 // @Description  Update an existing user with the provided details
@@ -154,6 +171,7 @@ func (h *Handler) UpdateUser(ctx *gin.Context) {
 }
 
 // DeleteUser godoc
+// @Security ApiKeyAuth
 // @Router       /v1/user/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a user by its unique identifier
@@ -166,9 +184,14 @@ func (h *Handler) UpdateUser(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteUser(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.UserService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.UserService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error user Delete", http.StatusBadRequest, err.Error())
 		return

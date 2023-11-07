@@ -32,15 +32,13 @@ func (h *Handler) CreateClients(ctx *gin.Context) {
 	}
 
 	resp, err := h.services.ClientService().Create(ctx, &user_service.CreateClientsRequest{
-		Firstname:        client.Firstname,
-		Lastname:         client.Lastname,
-		Phone:            client.Phone,
-		Photo:            client.Photo,
-		BirthDate:        client.BirthDate,
-		DiscountType:     client.DiscountType,
-		DiscountAmount:   client.DiscountAmount,
-		TotalOrdersCount: client.TotalOrdersCount,
-		TotalOrdersSum:   client.TotalOrdersSum,
+		Firstname:      client.Firstname,
+		Lastname:       client.Lastname,
+		Phone:          client.Phone,
+		Photo:          client.Photo,
+		BirthDate:      client.BirthDate,
+		DiscountType:   client.DiscountType,
+		DiscountAmount: client.DiscountAmount,
 	})
 
 	if err != nil {
@@ -53,6 +51,7 @@ func (h *Handler) CreateClients(ctx *gin.Context) {
 }
 
 // GetAllClients godoc
+// @Security ApiKeyAuth
 // @Router       /v1/client [get]
 // @Summary      GetAll Clients
 // @Description  get client
@@ -139,6 +138,7 @@ func (h *Handler) GetListClients(ctx *gin.Context) {
 }
 
 // GetClients godoc
+// @Security ApiKeyAuth
 // @Router       /v1/client/{id} [get]
 // @Summary      Get a client by ID
 // @Description  Retrieve a client by its unique identifier
@@ -151,9 +151,14 @@ func (h *Handler) GetListClients(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetClients(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.ClientService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.ClientService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error client GetById", http.StatusBadRequest, err.Error())
 		return
@@ -163,6 +168,7 @@ func (h *Handler) GetClients(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/client/{id} [put]
 // @Summary      Update an existing client
 // @Description  Update an existing client with the provided details
@@ -198,6 +204,7 @@ func (h *Handler) UpdateClients(ctx *gin.Context) {
 }
 
 // DeleteClients godoc
+// @Security ApiKeyAuth
 // @Router       /v1/client/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a client by its unique identifier
@@ -210,9 +217,14 @@ func (h *Handler) UpdateClients(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteClients(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.ClientService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.ClientService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error client Delete", http.StatusBadRequest, err.Error())
 		return

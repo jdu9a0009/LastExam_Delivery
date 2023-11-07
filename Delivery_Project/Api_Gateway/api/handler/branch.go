@@ -52,6 +52,7 @@ func (h *Handler) CreateBranch(ctx *gin.Context) {
 }
 
 // GetAllBranch godoc
+// @Security ApiKeyAuth
 // @Router       /v1/branch [get]
 // @Summary      GetAll Branch
 // @Description  get branch
@@ -97,6 +98,7 @@ func (h *Handler) GetListBranch(ctx *gin.Context) {
 }
 
 // GetBranch godoc
+// @Security ApiKeyAuth
 // @Router       /v1/branch/{id} [get]
 // @Summary      Get a branch by ID
 // @Description  Retrieve a branch by its unique identifier
@@ -109,9 +111,14 @@ func (h *Handler) GetListBranch(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetBranch(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.BranchService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.BranchService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
 		return
@@ -121,6 +128,7 @@ func (h *Handler) GetBranch(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/branch/{id} [put]
 // @Summary      Update an existing branch
 // @Description  Update an existing branch with the provided details
@@ -156,21 +164,28 @@ func (h *Handler) UpdateBranch(ctx *gin.Context) {
 }
 
 // DeleteBranch godoc
+// @Security ApiKeyAuth
 // @Router       /v1/branch/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a branch by its unique identifier
 // @Tags         branch
 // @Accept       json
 // @Produce      json
-// @Param        id   path    string     true    "Catgeory ID to retrieve"
+// @Param        id   path    int     true    "Catgeory ID to retrieve"
 // @Success      200  {object}  user_service.Response
 // @Failure      400  {object}  Response{data=string}
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteBranch(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.BranchService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch Delete", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := h.services.BranchService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error branch Delete", http.StatusBadRequest, err.Error())
 		return

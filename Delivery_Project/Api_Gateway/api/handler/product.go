@@ -11,6 +11,7 @@ import (
 )
 
 // CreateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/product [post]
 // @Summary      Create a new product
 // @Description  Create a new product with the provided details
@@ -51,13 +52,14 @@ func (h *Handler) CreateProduct(ctx *gin.Context) {
 }
 
 // GetAllProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/product [get]
 // @Summary      GetAll Product
 // @Description  get product
 // @Tags         product
 // @Accept       json
 // @Produce      json
-// @Param search query string false "search"
+// @Param search query string false "search by title"
 // @Param limit query integer false "limit"
 // @Param page query integer false "page"
 // @Param type query integer false "type"
@@ -100,6 +102,7 @@ func (h *Handler) GetListProduct(ctx *gin.Context) {
 }
 
 // GetProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/product/{id} [get]
 // @Summary      Get a product by ID
 // @Description  Retrieve a product by its unique identifier
@@ -124,6 +127,7 @@ func (h *Handler) GetProduct(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/product/{id} [put]
 // @Summary      Update an existing product
 // @Description  Update an existing product with the provided details
@@ -159,6 +163,7 @@ func (h *Handler) UpdateProduct(ctx *gin.Context) {
 }
 
 // DeleteProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/product/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a product by its unique identifier

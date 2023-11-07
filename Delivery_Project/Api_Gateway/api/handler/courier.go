@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	user_service "api-gateway-service/genproto/user_service"
+	"api-gateway-service/pkg/helper"
+	"api-gateway-service/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +33,14 @@ func (h *Handler) CreateCourier(ctx *gin.Context) {
 		return
 	}
 
+	hashedPass, err := helper.GeneratePasswordHash(courier.Password)
+	if err != nil {
+		h.log.Error("error while generating hash password:", logger.Error(err))
+		ctx.JSON(http.StatusBadRequest, "invalid body")
+		return
+	}
+	courier.Password = string(hashedPass)
+
 	resp, err := h.services.CourierService().Create(ctx, &user_service.CreateCouriersRequest{
 		Firstname:     courier.Firstname,
 		Lastname:      courier.Lastname,
@@ -51,6 +61,7 @@ func (h *Handler) CreateCourier(ctx *gin.Context) {
 }
 
 // GetAllCourier godoc
+// @Security ApiKeyAuth
 // @Router       /v1/courier [get]
 // @Summary      GetAll Courier
 // @Description  get courier
@@ -59,7 +70,7 @@ func (h *Handler) CreateCourier(ctx *gin.Context) {
 // @Produce      json
 // @Param        limit    query     int  false  "limit for response"  Default(10)
 // @Param		 page     query     int  false  "page for response"   Default(1)
-// @Param        name     query     string false "search by name"
+// @Param        name     query     string false "Search by firstname and lastname and phone"
 // @Param        created_at_from     query     string false "search by created_at_from"
 // @Param        created_at_to     query     string false "search by created_at_to"
 // @Success      200  {array}   user_service.ListCouriersResponse
@@ -96,6 +107,7 @@ func (h *Handler) GetListCourier(ctx *gin.Context) {
 }
 
 // GetCourier godoc
+// @Security ApiKeyAuth
 // @Router       /v1/courier/{id} [get]
 // @Summary      Get a courier by ID
 // @Description  Retrieve a courier by its unique identifier
@@ -108,9 +120,14 @@ func (h *Handler) GetListCourier(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetCourier(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.CourierService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.CourierService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error courier GetById", http.StatusBadRequest, err.Error())
 		return
@@ -120,6 +137,7 @@ func (h *Handler) GetCourier(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/courier/{id} [put]
 // @Summary      Update an existing courier
 // @Description  Update an existing courier with the provided details
@@ -155,6 +173,7 @@ func (h *Handler) UpdateCourier(ctx *gin.Context) {
 }
 
 // DeleteCourier godoc
+// @Security ApiKeyAuth
 // @Router       /v1/courier/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a courier by its unique identifier
@@ -167,9 +186,14 @@ func (h *Handler) UpdateCourier(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteCourier(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.CourierService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.CourierService().Delete(ctx.Request.Context(), &user_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error courier Delete", http.StatusBadRequest, err.Error())
 		return

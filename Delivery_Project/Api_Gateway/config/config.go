@@ -49,6 +49,11 @@ type Config struct {
 	SecretKey string
 }
 
+const (
+	TokenExpireTime = 24 * time.Hour
+	JWTSecretKey    = "MySecretKey"
+)
+
 // Load ...
 func Load() Config {
 	if err := godotenv.Load("./.env"); err != nil {

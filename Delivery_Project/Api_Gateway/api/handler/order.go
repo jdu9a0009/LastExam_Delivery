@@ -6,11 +6,13 @@ import (
 	"strconv"
 
 	order_service "api-gateway-service/genproto/order_service"
+	"api-gateway-service/genproto/user_service"
 
 	"github.com/gin-gonic/gin"
 )
 
 // CreateOrder godoc
+// @Security ApiKeyAuth
 // @Router       /v1/order [post]
 // @Summary      Create a new order
 // @Description  Create a new order with the provided details
@@ -24,11 +26,59 @@ import (
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) CreateOrder(ctx *gin.Context) {
 	var order = order_service.CreateOrderRequest{}
-
+	var discountprice float32
+	var deliveryprice float32
 	err := ctx.ShouldBindJSON(&order)
 	if err != nil {
 		h.handlerResponse(ctx, "CreateOrder", http.StatusBadRequest, err.Error())
 		return
+	}
+
+	respClient, err := h.services.ClientService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: order.ClientId})
+	if err != nil {
+		h.handlerResponse(ctx, "error client GetById in create order", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if respClient.DiscountType == "percent" {
+		discountprice = float32(order.Price) * float32(respClient.DiscountAmount)
+	}
+	if respClient.DiscountType == "fixed" {
+		discountprice = float32(respClient.DiscountAmount)
+	}
+
+	//task 10 delvery priceni hisoblash
+	respBranch, err := h.services.BranchService().Get(ctx.Request.Context(), &user_service.IdRequest{Id: order.BranchId})
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	respDeliveryTariff, err := h.services.DeliveryTariffService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: respBranch.DeliveryTarifId})
+	if err != nil {
+		h.handlerResponse(ctx, "error delivery_tariff GetById in order create", http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if respDeliveryTariff.TariffType == "fixed" {
+		deliveryprice = float32(respDeliveryTariff.BasePrice)
+	} else if respDeliveryTariff.TariffType == "alternative" {
+		respTariff, err := h.services.DeliveryTariffService().List(ctx.Request.Context(), &order_service.ListDeliveryTariffRequest{
+			Page:      1,
+			Limit:     10,
+			TarifType: "alternative",
+		})
+
+		if err != nil {
+			h.handlerResponse(ctx, "error GetListDeliveryTariff in  create order", http.StatusBadRequest, err.Error())
+			return
+		}
+		for _, v := range respTariff.DeliveryTariffs {
+			if order.Price > v.Values.FromPrice && order.Price < v.Values.ToPrice {
+				deliveryprice = float32(v.Values.Price)
+
+			}
+		}
 	}
 
 	resp, err := h.services.OrderService().Create(ctx, &order_service.CreateOrderRequest{
@@ -36,9 +86,9 @@ func (h *Handler) CreateOrder(ctx *gin.Context) {
 		BranchId:      order.BranchId,
 		Type:          order.Type,
 		CourierId:     order.CourierId,
-		DeliveryPrice: order.DeliveryPrice,
-		Price:         order.Price,
-		Discount:      order.Discount,
+		DeliveryPrice: float64(deliveryprice),
+		Price:         order.Price - float64(discountprice),
+		Discount:      float64(discountprice),
 		PaymentType:   order.PaymentType,
 	})
 
@@ -52,15 +102,25 @@ func (h *Handler) CreateOrder(ctx *gin.Context) {
 }
 
 // GetAllOrder godoc
+// @Security ApiKeyAuth
 // @Router       /v1/order [get]
 // @Summary      GetAll Order
 // @Description  get order
 // @Tags         order
 // @Accept       json
 // @Produce      json
-// @Param        limit    query     int  false  "limit for response"  Default(10)
-// @Param		 page     query     int  false  "page for response"   Default(1)
-// @Param        name     query     string false "search by title"
+// @Param search query string false "search"
+// @Param limit query integer false "limit"
+// @Param page query integer false "page"
+// @Param page query integer false "page"
+// @Param order_id query integer false "order_id"
+// @Param client_id query integer false "client_id"
+// @Param branch_id query integer false "branch_id"
+// @Param delivery_type query string false "delivery_type"
+// @Param courier_id query integer false "courier_id"
+// @Param price_from query integer false "price_from"
+// @Param price_to query integer false "price_to"
+// @Param payment_type query string false "payment_type"
 // @Success      200  {array}   order_service.ListOrderResponse
 // @Failure      400  {object}  Response{data=string}
 // @Failure      404  {object}  Response{data=string}
@@ -102,16 +162,7 @@ func (h *Handler) GetListOrder(ctx *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	/*
-			    BranchId     int32   `protobuf:"varint,5,opt,name=branch_id,json=branchId,proto3" json:"branch_id,omitempty"`
-		    DeliveryType string  `protobuf:"bytes,6,opt,name=delivery_type,json=deliveryType,proto3" json:"delivery_type,omitempty"`
-		    CourierId    int32   `protobuf:"varint,7,opt,name=courier_id,json=courierId,proto3" json:"courier_id,omitempty"`
-		    PriceFrom    float64 `protobuf:"fixed64,8,opt,name=price_from,json=priceFrom,proto3" json:"price_from,omitempty"`
-		    PriceTo      float64 `protobuf:"fixed64,9,opt,name=price_to,json=priceTo,proto3" json:"price_to,omitempty"`
-		    PaymentType  string  `protobuf:"bytes,10,opt,name=payment_type,json=paymentType,proto3" json:"payment_type,omitempty"`
-		}
 
-	*/
 	resp, err := h.services.OrderService().List(ctx.Request.Context(), &order_service.ListOrderRequest{
 		Limit:        int32(limit),
 		Page:         int32(page),
@@ -134,6 +185,7 @@ func (h *Handler) GetListOrder(ctx *gin.Context) {
 }
 
 // GetOrder godoc
+// @Security ApiKeyAuth
 // @Router       /v1/order/{id} [get]
 // @Summary      Get a order by ID
 // @Description  Retrieve a order by its unique identifier
@@ -146,9 +198,14 @@ func (h *Handler) GetListOrder(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetOrder(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.OrderService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.OrderService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error order GetById", http.StatusBadRequest, err.Error())
 		return
@@ -158,6 +215,7 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 }
 
 // UpdateOrder godoc
+// @Security ApiKeyAuth
 // @Router       /v1/order/{id} [put]
 // @Summary      Update an existing order
 // @Description  Update an existing order with the provided details
@@ -193,6 +251,7 @@ func (h *Handler) UpdateOrder(ctx *gin.Context) {
 }
 
 // DeleteOrder godoc
+// @Security ApiKeyAuth
 // @Router       /v1/order/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a order by its unique identifier
@@ -205,9 +264,14 @@ func (h *Handler) UpdateOrder(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteOrder(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.OrderService().Delete(ctx.Request.Context(), &order_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.OrderService().Delete(ctx.Request.Context(), &order_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error order Delete", http.StatusBadRequest, err.Error())
 		return

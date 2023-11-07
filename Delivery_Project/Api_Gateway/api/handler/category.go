@@ -48,6 +48,7 @@ func (h *Handler) CreateCategory(ctx *gin.Context) {
 }
 
 // GetAllCategory godoc
+// @Security ApiKeyAuth
 // @Router       /v1/category [get]
 // @Summary      GetAll Category
 // @Description  get category
@@ -89,6 +90,7 @@ func (h *Handler) GetListCategory(ctx *gin.Context) {
 }
 
 // GetCategory godoc
+// @Security ApiKeyAuth
 // @Router       /v1/category/{id} [get]
 // @Summary      Get a category by ID
 // @Description  Retrieve a category by its unique identifier
@@ -113,6 +115,7 @@ func (h *Handler) GetCategory(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/category/{id} [put]
 // @Summary      Update an existing category
 // @Description  Update an existing category with the provided details
@@ -148,6 +151,7 @@ func (h *Handler) UpdateCategory(ctx *gin.Context) {
 }
 
 // DeleteCategory godoc
+// @Security ApiKeyAuth
 // @Router       /v1/category/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a category by its unique identifier

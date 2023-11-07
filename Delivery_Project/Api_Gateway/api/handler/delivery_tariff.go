@@ -48,6 +48,7 @@ func (h *Handler) CreateDeliveryTariff(ctx *gin.Context) {
 }
 
 // GetAllDeliveryTariff godoc
+// @Security ApiKeyAuth
 // @Router       /v1/delivery_tariff [get]
 // @Summary      GetAll DeliveryTariff
 // @Description  get delivery_tariff
@@ -56,7 +57,8 @@ func (h *Handler) CreateDeliveryTariff(ctx *gin.Context) {
 // @Produce      json
 // @Param        limit    query     int  false  "limit for response"  Default(10)
 // @Param		 page     query     int  false  "page for response"   Default(1)
-// @Param        name     query     string false "search by title"
+// @Param        name     query     string false "search by name"
+// @Param        tariff_type     query     string false "search by tariff_type"
 // @Success      200  {array}   order_service.ListDeliveryTariffResponse
 // @Failure      400  {object}  Response{data=string}
 // @Failure      404  {object}  Response{data=string}
@@ -90,6 +92,7 @@ func (h *Handler) GetListDeliveryTariff(ctx *gin.Context) {
 }
 
 // GetDeliveryTariff godoc
+// @Security ApiKeyAuth
 // @Router       /v1/delivery_tariff/{id} [get]
 // @Summary      Get a delivery_tariff by ID
 // @Description  Retrieve a delivery_tariff by its unique identifier
@@ -102,9 +105,14 @@ func (h *Handler) GetListDeliveryTariff(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) GetDeliveryTariff(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.DeliveryTariffService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.DeliveryTariffService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error delivery_tariff GetById", http.StatusBadRequest, err.Error())
 		return
@@ -114,6 +122,7 @@ func (h *Handler) GetDeliveryTariff(ctx *gin.Context) {
 }
 
 // UpdateProduct godoc
+// @Security ApiKeyAuth
 // @Router       /v1/delivery_tariff/{id} [put]
 // @Summary      Update an existing delivery_tariff
 // @Description  Update an existing delivery_tariff with the provided details
@@ -149,6 +158,7 @@ func (h *Handler) UpdateDeliveryTariff(ctx *gin.Context) {
 }
 
 // DeleteDeliveryTariff godoc
+// @Security ApiKeyAuth
 // @Router       /v1/delivery_tariff/{id} [delete]
 // @Summary      Delete a Catgory
 // @Description  delete a delivery_tariff by its unique identifier
@@ -161,9 +171,14 @@ func (h *Handler) UpdateDeliveryTariff(ctx *gin.Context) {
 // @Failure      404  {object}  Response{data=string}
 // @Failure      500  {object}  Response{data=string}
 func (h *Handler) DeleteDeliveryTariff(ctx *gin.Context) {
-	id := ctx.Param("id")
+	idStr := ctx.Param("id")
 
-	resp, err := h.services.DeliveryTariffService().Delete(ctx.Request.Context(), &order_service.IdRequest{Id: id})
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
+		return
+	}
+	resp, err := h.services.DeliveryTariffService().Delete(ctx.Request.Context(), &order_service.IdRequest{Id: int32(id)})
 	if err != nil {
 		h.handlerResponse(ctx, "error delivery_tariff Delete", http.StatusBadRequest, err.Error())
 		return

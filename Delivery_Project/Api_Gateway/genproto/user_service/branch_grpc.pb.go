@@ -27,6 +27,7 @@ type BranchServiceClient interface {
 	List(ctx context.Context, in *ListBranchRequest, opts ...grpc.CallOption) (*ListBranchResponse, error)
 	Update(ctx context.Context, in *UpdateBranchRequest, opts ...grpc.CallOption) (*Response, error)
 	Delete(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
+	ListActive(ctx context.Context, in *ListActiveBranchRequest, opts ...grpc.CallOption) (*ListBranchResponse, error)
 }
 
 type branchServiceClient struct {
@@ -82,6 +83,15 @@ func (c *branchServiceClient) Delete(ctx context.Context, in *IdRequest, opts ..
 	return out, nil
 }
 
+func (c *branchServiceClient) ListActive(ctx context.Context, in *ListActiveBranchRequest, opts ...grpc.CallOption) (*ListBranchResponse, error) {
+	out := new(ListBranchResponse)
+	err := c.cc.Invoke(ctx, "/user_service.BranchService/ListActive", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BranchServiceServer is the server API for BranchService service.
 // All implementations must embed UnimplementedBranchServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type BranchServiceServer interface {
 	List(context.Context, *ListBranchRequest) (*ListBranchResponse, error)
 	Update(context.Context, *UpdateBranchRequest) (*Response, error)
 	Delete(context.Context, *IdRequest) (*Response, error)
+	ListActive(context.Context, *ListActiveBranchRequest) (*ListBranchResponse, error)
 	mustEmbedUnimplementedBranchServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedBranchServiceServer) Update(context.Context, *UpdateBranchReq
 }
 func (UnimplementedBranchServiceServer) Delete(context.Context, *IdRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedBranchServiceServer) ListActive(context.Context, *ListActiveBranchRequest) (*ListBranchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListActive not implemented")
 }
 func (UnimplementedBranchServiceServer) mustEmbedUnimplementedBranchServiceServer() {}
 
@@ -216,6 +230,24 @@ func _BranchService_Delete_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BranchService_ListActive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListActiveBranchRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BranchServiceServer).ListActive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user_service.BranchService/ListActive",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BranchServiceServer).ListActive(ctx, req.(*ListActiveBranchRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BranchService_ServiceDesc is the grpc.ServiceDesc for BranchService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var BranchService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _BranchService_Delete_Handler,
+		},
+		{
+			MethodName: "ListActive",
+			Handler:    _BranchService_ListActive_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1476,7 +1476,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "search by name",
+                        "description": "Search by firstname and lastname and phone",
                         "name": "name",
                         "in": "query"
                     },
@@ -1939,8 +1939,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "search by title",
+                        "description": "search by name",
                         "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "search by tariff_type",
+                        "name": "tariff_type",
                         "in": "query"
                     }
                 ],
@@ -2375,23 +2381,75 @@ const docTemplate = `{
                 "summary": "GetAll Order",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "search",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
-                        "default": 10,
-                        "description": "limit for response",
+                        "description": "limit",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "default": 1,
-                        "description": "page for response",
+                        "description": "page",
                         "name": "page",
                         "in": "query"
                     },
                     {
+                        "type": "integer",
+                        "description": "page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "order_id",
+                        "name": "order_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "client_id",
+                        "name": "client_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "branch_id",
+                        "name": "branch_id",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
-                        "description": "search by title",
-                        "name": "name",
+                        "description": "delivery_type",
+                        "name": "delivery_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "courier_id",
+                        "name": "courier_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "price_from",
+                        "name": "price_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "price_to",
+                        "name": "price_to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "payment_type",
+                        "name": "payment_type",
                         "in": "query"
                     }
                 ],
@@ -2827,7 +2885,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "search",
+                        "description": "search by title",
                         "name": "search",
                         "in": "query"
                     },
@@ -3302,7 +3360,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "search by name",
+                        "description": "search by firstname,lastname and phone",
                         "name": "name",
                         "in": "query"
                     },
@@ -4361,12 +4419,6 @@ const docTemplate = `{
                 },
                 "photo": {
                     "type": "string"
-                },
-                "total_orders_count": {
-                    "type": "integer"
-                },
-                "total_orders_sum": {
-                    "type": "number"
                 }
             }
         },

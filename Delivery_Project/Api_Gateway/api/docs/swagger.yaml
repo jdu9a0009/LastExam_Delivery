@@ -408,10 +408,6 @@ definitions:
         type: string
       photo:
         type: string
-      total_orders_count:
-        type: integer
-      total_orders_sum:
-        type: number
     type: object
   user_service.CreateCouriersRequest:
     properties:
@@ -1423,7 +1419,7 @@ paths:
         in: query
         name: page
         type: integer
-      - description: search by name
+      - description: Search by firstname and lastname and phone
         in: query
         name: name
         type: string
@@ -1686,9 +1682,13 @@ paths:
         in: query
         name: page
         type: integer
-      - description: search by title
+      - description: search by name
         in: query
         name: name
+        type: string
+      - description: search by tariff_type
+        in: query
+        name: tariff_type
         type: string
       produces:
       - application/json
@@ -1931,19 +1931,53 @@ paths:
       - application/json
       description: get order
       parameters:
-      - default: 10
-        description: limit for response
+      - description: search
+        in: query
+        name: search
+        type: string
+      - description: limit
         in: query
         name: limit
         type: integer
-      - default: 1
-        description: page for response
+      - description: page
         in: query
         name: page
         type: integer
-      - description: search by title
+      - description: page
         in: query
-        name: name
+        name: page
+        type: integer
+      - description: order_id
+        in: query
+        name: order_id
+        type: integer
+      - description: client_id
+        in: query
+        name: client_id
+        type: integer
+      - description: branch_id
+        in: query
+        name: branch_id
+        type: integer
+      - description: delivery_type
+        in: query
+        name: delivery_type
+        type: string
+      - description: courier_id
+        in: query
+        name: courier_id
+        type: integer
+      - description: price_from
+        in: query
+        name: price_from
+        type: integer
+      - description: price_to
+        in: query
+        name: price_to
+        type: integer
+      - description: payment_type
+        in: query
+        name: payment_type
         type: string
       produces:
       - application/json
@@ -2186,7 +2220,7 @@ paths:
       - application/json
       description: get product
       parameters:
-      - description: search
+      - description: search by title
         in: query
         name: search
         type: string
@@ -2457,7 +2491,7 @@ paths:
         in: query
         name: page
         type: integer
-      - description: search by name
+      - description: search by firstname,lastname and phone
         in: query
         name: name
         type: string
