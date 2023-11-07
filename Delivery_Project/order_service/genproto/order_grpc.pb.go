@@ -28,6 +28,9 @@ type OrderServiceClient interface {
 	Update(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*Response, error)
 	UpdateStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Response, error)
 	Delete(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Response, error)
+	GetOrderStatus(ctx context.Context, in *OrderIdRequest, opts ...grpc.CallOption) (*OrderStatusResponse, error)
+	GetAllAcceptedOrders(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error)
+	GetAllAcceptableOrders(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error)
 }
 
 type orderServiceClient struct {
@@ -92,6 +95,33 @@ func (c *orderServiceClient) Delete(ctx context.Context, in *IdRequest, opts ...
 	return out, nil
 }
 
+func (c *orderServiceClient) GetOrderStatus(ctx context.Context, in *OrderIdRequest, opts ...grpc.CallOption) (*OrderStatusResponse, error) {
+	out := new(OrderStatusResponse)
+	err := c.cc.Invoke(ctx, "/order_service.OrderService/GetOrderStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderServiceClient) GetAllAcceptedOrders(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error) {
+	out := new(Order)
+	err := c.cc.Invoke(ctx, "/order_service.OrderService/GetAllAcceptedOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *orderServiceClient) GetAllAcceptableOrders(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error) {
+	out := new(Order)
+	err := c.cc.Invoke(ctx, "/order_service.OrderService/GetAllAcceptableOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrderServiceServer is the server API for OrderService service.
 // All implementations must embed UnimplementedOrderServiceServer
 // for forward compatibility
@@ -102,6 +132,9 @@ type OrderServiceServer interface {
 	Update(context.Context, *UpdateOrderRequest) (*Response, error)
 	UpdateStatus(context.Context, *UpdateOrderStatusRequest) (*Response, error)
 	Delete(context.Context, *IdRequest) (*Response, error)
+	GetOrderStatus(context.Context, *OrderIdRequest) (*OrderStatusResponse, error)
+	GetAllAcceptedOrders(context.Context, *IdRequest) (*Order, error)
+	GetAllAcceptableOrders(context.Context, *IdRequest) (*Order, error)
 	mustEmbedUnimplementedOrderServiceServer()
 }
 
@@ -126,6 +159,15 @@ func (UnimplementedOrderServiceServer) UpdateStatus(context.Context, *UpdateOrde
 }
 func (UnimplementedOrderServiceServer) Delete(context.Context, *IdRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedOrderServiceServer) GetOrderStatus(context.Context, *OrderIdRequest) (*OrderStatusResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetOrderStatus not implemented")
+}
+func (UnimplementedOrderServiceServer) GetAllAcceptedOrders(context.Context, *IdRequest) (*Order, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAcceptedOrders not implemented")
+}
+func (UnimplementedOrderServiceServer) GetAllAcceptableOrders(context.Context, *IdRequest) (*Order, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllAcceptableOrders not implemented")
 }
 func (UnimplementedOrderServiceServer) mustEmbedUnimplementedOrderServiceServer() {}
 
@@ -248,6 +290,60 @@ func _OrderService_Delete_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrderService_GetOrderStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OrderIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).GetOrderStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/order_service.OrderService/GetOrderStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).GetOrderStatus(ctx, req.(*OrderIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OrderService_GetAllAcceptedOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).GetAllAcceptedOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/order_service.OrderService/GetAllAcceptedOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).GetAllAcceptedOrders(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _OrderService_GetAllAcceptableOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrderServiceServer).GetAllAcceptableOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/order_service.OrderService/GetAllAcceptableOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrderServiceServer).GetAllAcceptableOrders(ctx, req.(*IdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrderService_ServiceDesc is the grpc.ServiceDesc for OrderService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +374,18 @@ var OrderService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _OrderService_Delete_Handler,
+		},
+		{
+			MethodName: "GetOrderStatus",
+			Handler:    _OrderService_GetOrderStatus_Handler,
+		},
+		{
+			MethodName: "GetAllAcceptedOrders",
+			Handler:    _OrderService_GetAllAcceptedOrders_Handler,
+		},
+		{
+			MethodName: "GetAllAcceptableOrders",
+			Handler:    _OrderService_GetAllAcceptableOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -320,35 +320,30 @@ func (b *orderRepo) Delete(c context.Context, req *order_service.IdRequest) (res
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("order with ID %s not found", req.Id)
+		return "", fmt.Errorf("order with ID %d not found", req.Id)
 	}
 
 	return "deleted", nil
 }
 
-func (b *orderRepo) GetOrderStatus(c context.Context, ID int, orderID string) (string, error) {
+func (b *orderRepo) GetOrderStatus(c context.Context, req *order_service.IdRequest) (resp *order_service.OrderStatusResponse, err error) {
 	query := `
 		SELECT "status" FROM "orders"
-		WHERE id = $1 AND order_id = $2 AND "deleted_at" IS NULL`
+		WHERE order_id = $1 AND "deleted_at" IS NULL`
 
-	var status string
-	err := b.db.QueryRow(c, query, ID, orderID).Scan(&status)
+	status := order_service.OrderStatusResponse{}
+	err = b.db.QueryRow(c, query, req.Id).Scan(&status)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", fmt.Errorf("order with ID %s not found", orderID)
+			return nil, fmt.Errorf("order with ID %d not found", req.Id)
 		}
-		return "", fmt.Errorf("failed to get order status: %w", err)
+		return nil, fmt.Errorf("failed to get order status: %w", err)
 	}
 
-	return status, nil
+	return &status, nil
 }
 
 func (b *orderRepo) UpdateStatus(c context.Context, req *order_service.UpdateOrderStatusRequest) (string, error) {
-	// Get the previous status
-	prevStatus, err := b.GetOrderStatus(c, int(req.Id), req.OrderId)
-	if err != nil {
-		return "", fmt.Errorf("failed to get previous status: %w", err)
-	}
 
 	// Check if the previous status matches
 	validTransitions := map[string]string{
@@ -363,20 +358,19 @@ func (b *orderRepo) UpdateStatus(c context.Context, req *order_service.UpdateOrd
 		return "", fmt.Errorf("invalid status: %s", req.Status)
 	}
 
-	if prevStatus != requiredPrevStatus {
+	if req.Status != requiredPrevStatus {
 		return "", fmt.Errorf("previous status must be '%s' to update to '%s'", requiredPrevStatus, req.Status)
 	}
 
 	query := `
 		UPDATE "orders" 
 		SET "status" = $1, "updated_at" = NOW()
-		WHERE id = $2 AND "order_id" = $3 AND "deleted_at" IS NULL`
+		WHERE "order_id" = $2 AND "deleted_at" IS NULL`
 
 	result, err := b.db.Exec(
 		context.Background(),
 		query,
 		req.Status,
-		req.Id,
 		req.OrderId,
 	)
 
@@ -385,8 +379,125 @@ func (b *orderRepo) UpdateStatus(c context.Context, req *order_service.UpdateOrd
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("order with ID %d not found", req.Id)
+		return "", fmt.Errorf("order with ID %s not found", req.OrderId)
 	}
 
-	return fmt.Sprintf("status changed from '%s' to '%s'", prevStatus, req.Status), nil
+	return fmt.Sprintf("status changed from '%s' to '%s'", requiredPrevStatus, req.Status), nil
+}
+
+func (b *orderRepo) GetAllAcceptableOrders(c context.Context, req *order_service.IdRequest) (resp *order_service.Order, err error) {
+	query := `
+		SELECT 
+			"id",
+			"order_id", 
+			"client_id",    
+			"branch_id", 
+			"type",
+			"address",
+			"courier_id",
+			"price",
+			"delivery_price",
+			"discount",
+			"status",
+			"payment_type",
+			"created_at",
+			"updated_at" 
+		FROM "orders" 
+		WHERE "order_id"=$1 AND "deleted_at" IS NULL AND  status ='ready_in_branch'  adnd status ='accepted'`
+
+	var (
+		createdAt sql.NullString
+		updatedAt sql.NullString
+	)
+
+	order := order_service.Order{}
+	err = b.db.QueryRow(c, query, &req.Id).Scan(
+		&order.Id,
+		&order.OrderId,
+		&order.ClientId,
+		&order.BranchId,
+		&order.Type,
+		&order.Address,
+		&order.CourierId,
+		&order.Price,
+		&order.DeliveryPrice,
+		&order.Discount,
+		&order.Status,
+		&order.PaymentType,
+		&createdAt,
+		&updatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("order not found")
+		}
+		return nil, fmt.Errorf("failed to get order: %w", err)
+	}
+
+	if createdAt.Valid {
+		order.CreatedAt = createdAt.String
+	}
+	if updatedAt.Valid {
+		order.UpdatedAt = updatedAt.String
+	}
+
+	return &order, nil
+}
+func (b *orderRepo) GetAllAcceptedOrders(c context.Context, req *order_service.IdRequest) (resp *order_service.Order, err error) {
+	query := `
+		SELECT 
+			"id",
+			"order_id", 
+			"client_id",    
+			"branch_id", 
+			"type",
+			"address",
+			"courier_id",
+			"price",
+			"delivery_price",
+			"discount",
+			"status",
+			"payment_type",
+			"created_at",
+			"updated_at" 
+		FROM "orders" 
+		WHERE "order_id"=$1 AND "deleted_at" IS NULL AND  status ='courier_accepted'  adnd status ='on_way'`
+
+	var (
+		createdAt sql.NullString
+		updatedAt sql.NullString
+	)
+
+	order := order_service.Order{}
+	err = b.db.QueryRow(c, query, &req.Id).Scan(
+		&order.Id,
+		&order.OrderId,
+		&order.ClientId,
+		&order.BranchId,
+		&order.Type,
+		&order.Address,
+		&order.CourierId,
+		&order.Price,
+		&order.DeliveryPrice,
+		&order.Discount,
+		&order.Status,
+		&order.PaymentType,
+		&createdAt,
+		&updatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, fmt.Errorf("order not found")
+		}
+		return nil, fmt.Errorf("failed to get order: %w", err)
+	}
+
+	if createdAt.Valid {
+		order.CreatedAt = createdAt.String
+	}
+	if updatedAt.Valid {
+		order.UpdatedAt = updatedAt.String
+	}
+
+	return &order, nil
 }

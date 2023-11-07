@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 )
 
 func ReplaceQueryParams(namedQuery string, params map[string]interface{}) (string, []interface{}) {
@@ -31,10 +30,6 @@ var (
 	mutex   sync.Mutex
 	rnd     *rand.Rand
 )
-
-func init() {
-	rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
-}
 
 // GenerateUniqueID generates a unique six-digit ID as a string
 func GenerateUniqueID() string {
