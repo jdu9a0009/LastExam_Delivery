@@ -73,3 +73,11 @@ func (s *UserService) Delete(ctx context.Context, req *user_service.IdRequest) (
 
 	return &user_service.Response{Message: resp}, nil
 }
+func (s *UserService) GetUserByUserName(ctx context.Context, req *user_service.GetByUserName) (*user_service.Users, error) {
+	user, err := s.storage.Users().GetUserByUserName(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}

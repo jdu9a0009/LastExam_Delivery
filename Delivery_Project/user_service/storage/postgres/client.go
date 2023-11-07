@@ -32,12 +32,10 @@ func (b *clientRepo) Create(c context.Context, req *user_service.CreateClientsRe
             birth_date,
             discount_type,
             discount_amount,
-            total_orders_count,
-            total_orders_sum,
 			last_ordered_date,
 			created_at
         ) VALUES (
-            $1, $2, $3, $4, $5, $6, $7, $8, $9, now(), now()
+            $1, $2, $3, $4, $5, $6, $7, now(), now()
         ) RETURNING id`
 
 	var id int
@@ -49,8 +47,6 @@ func (b *clientRepo) Create(c context.Context, req *user_service.CreateClientsRe
 		req.BirthDate,
 		req.DiscountType,
 		req.DiscountAmount,
-		req.TotalOrdersCount,
-		req.TotalOrdersSum,
 	).Scan(&id)
 
 	if err != nil {
@@ -216,8 +212,16 @@ func (b *clientRepo) GetList(c context.Context, req *user_service.ListClientsReq
 		FROM clients
 		WHERE deleted_at IS NULL` + filter +
 		` ORDER BY created_at DESC LIMIT :limit OFFSET :offset`
-	params["limit"] = req.Limit
-	params["offset"] = (req.Page - 1) * req.Limit
+
+	params["limit"] = 10
+	params["offset"] = 0
+
+	if req.Limit > 0 {
+		params["limit"] = req.Limit
+	}
+	if req.Page >= 0 {
+		params["offset"] = (req.Page - 1) * req.Limit
+	}
 
 	q, arr = helper.ReplaceQueryParams(query, params)
 	rows, err := b.db.Query(c, q, arr...)
@@ -323,7 +327,7 @@ func (b *clientRepo) Delete(c context.Context, req *user_service.IdRequest) (res
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("client with ID %s not found", req.Id)
+		return "", fmt.Errorf("client with ID %d not found", req.Id)
 	}
 
 	return "deleted", nil

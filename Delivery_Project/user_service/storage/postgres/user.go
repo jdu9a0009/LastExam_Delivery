@@ -156,8 +156,16 @@ func (b *userRepo) GetList(c context.Context, req *user_service.ListUsersRequest
 	FROM users  where "active" and "deleted_at" is null` + filter
 
 	query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
-	params["limit"] = req.Limit
-	params["offset"] = (req.Page - 1) * req.Limit
+
+	params["limit"] = 10
+	params["offset"] = 0
+
+	if req.Limit > 0 {
+		params["limit"] = req.Limit
+	}
+	if req.Page >= 0 {
+		params["offset"] = (req.Page - 1) * req.Limit
+	}
 
 	q, arr = helper.ReplaceQueryParams(query, params)
 	rows, err := b.db.Query(c, q, arr...)
@@ -254,8 +262,44 @@ func (b *userRepo) Delete(c context.Context, req *user_service.IdRequest) (resp 
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("users with ID %s not found", req.Id)
+		return "", fmt.Errorf("users with ID %d not found", req.Id)
 	}
 
 	return "deleted", nil
+}
+func (c *userRepo) GetUserByUserName(ctx context.Context, req *user_service.GetByUserName) (*user_service.Users, error) {
+
+	query := `
+	SELECT
+	id,
+	first_name,
+	last_name,
+	phone,
+	login,
+	active,
+	created_at::text,
+	updated_at::text
+	FROM users
+	WHERE login=$1 AND active=true`
+
+	resp := c.db.QueryRow(ctx, query, req.Login)
+
+	var user user_service.Users
+
+	err := resp.Scan(
+		&user.Id,
+		&user.Firstname,
+		&user.Lastname,
+		&user.Phone,
+		&user.Login,
+		&user.Active,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		return &user_service.Users{}, err
+	}
+
+	return &user, nil
 }

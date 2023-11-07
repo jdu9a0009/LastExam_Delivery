@@ -134,7 +134,7 @@ func (b *courierRepo) GetList(c context.Context, req *user_service.ListCouriersR
 		params["created_at_to"] = req.CreatedAtTo
 	}
 
-	countQuery := `SELECT count(1) FROM "users" WHERE "deleted_at" IS NULL AND "active"` + filter
+	countQuery := `SELECT count(1) FROM "couriers" WHERE "deleted_at" IS NULL AND "active"` + filter
 	q, arr := helper.ReplaceQueryParams(countQuery, params)
 	err = b.db.QueryRow(c, q, arr...).Scan(
 		&resp.Count,
@@ -154,13 +154,22 @@ func (b *courierRepo) GetList(c context.Context, req *user_service.ListCouriersR
 	        login,
 	        password,
 			max_order_count,
+			branch_id,
 	    	created_at::text,
 		    updated_at 
 	FROM couriers  where "active" and "deleted_at" is null` + filter
 
 	query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
-	params["limit"] = req.Limit
-	params["offset"] = (req.Page - 1) * req.Limit
+
+	params["limit"] = 10
+	params["offset"] = 0
+
+	if req.Limit > 0 {
+		params["limit"] = req.Limit
+	}
+	if req.Page >= 0 {
+		params["offset"] = (req.Page - 1) * req.Limit
+	}
 
 	q, arr = helper.ReplaceQueryParams(query, params)
 	rows, err := b.db.Query(c, q, arr...)
@@ -180,6 +189,7 @@ func (b *courierRepo) GetList(c context.Context, req *user_service.ListCouriersR
 			&courier.Login,
 			&courier.Password,
 			&courier.MaxOrderCount,
+			&courier.BranchId,
 			&courier.CreatedAt,
 			&updatedAt,
 		)
@@ -259,7 +269,7 @@ func (b *courierRepo) Delete(c context.Context, req *user_service.IdRequest) (re
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("courier with ID %s not found", req.Id)
+		return "", fmt.Errorf("courier with ID %d not found", req.Id)
 	}
 
 	return "deleted", nil

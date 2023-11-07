@@ -166,8 +166,15 @@ func (b *branchRepo) GetList(c context.Context, req *user_service.ListBranchRequ
 	FROM branches  where "active" and "deleted_at" is null` + filter
 
 	query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
-	params["limit"] = req.Limit
-	params["offset"] = (req.Page - 1) * req.Limit
+	params["limit"] = 10
+	params["offset"] = 0
+
+	if req.Limit > 0 {
+		params["limit"] = req.Limit
+	}
+	if req.Page >= 0 {
+		params["offset"] = (req.Page - 1) * req.Limit
+	}
 
 	q, arr = helper.ReplaceQueryParams(query, params)
 	rows, err := b.db.Query(c, q, arr...)
@@ -270,8 +277,96 @@ func (b *branchRepo) Delete(c context.Context, req *user_service.IdRequest) (res
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("branch with ID %s not found", req.Id)
+		return "", fmt.Errorf("branch with ID %d not found", req.Id)
 	}
 
 	return "deleted", nil
+}
+
+func (b *branchRepo) GetListActiveBranch(c context.Context, req *user_service.ListActiveBranchRequest) (*user_service.ListBranchResponse, error) {
+
+	var (
+		updatedAt sql.NullString
+		createdAt sql.NullString
+		resp      user_service.ListBranchResponse
+		err       error
+		filter    string
+		params    = make(map[string]interface{})
+	)
+
+	countQuery := `SELECT count(1) FROM "branches" WHERE "deleted_at" IS NULL AND "active"` + filter
+	q, arr := helper.ReplaceQueryParams(countQuery, params)
+	err = b.db.QueryRow(c, q, arr...).Scan(
+		&resp.Count,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while scanning count %w", err)
+	}
+	filter += ` AND '` + req.Date + `'::time BETWEEN work_hour_start AND work_hour_end `
+	params["date"] = req.Date
+
+	query := `
+	SELECT 
+		id,
+		name,
+		phone,
+		photo,
+		delivery_tarif_id,
+		work_hour_start::text,
+		work_hour_end::text,
+		address,
+		active,
+		destination,
+		created_at,
+		updated_at 
+	FROM branches  where "active" and "deleted_at" is null` + filter
+
+	query += " ORDER BY created_at DESC LIMIT :limit OFFSET :offset"
+
+	if req.Limit > 0 {
+		params["limit"] = req.Limit
+	}
+	if req.Page >= 0 {
+		params["offset"] = (req.Page - 1) * req.Limit
+	}
+
+	q, arr = helper.ReplaceQueryParams(query, params)
+	rows, err := b.db.Query(c, q, arr...)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting rows %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var branch user_service.Branch
+		err = rows.Scan(
+			&branch.Id,
+			&branch.Name,
+			&branch.Phone,
+			&branch.Photo,
+			&branch.DeliveryTarifId,
+			&branch.WorkHourStart,
+			&branch.WorkHourEnd,
+			&branch.Address,
+			&branch.Active,
+			&branch.Destination,
+			&createdAt,
+			&updatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning branch err: %w", err)
+		}
+
+		if createdAt.Valid {
+			branch.CreatedAt = createdAt.String
+
+		}
+		if updatedAt.Valid {
+			branch.UpdatedAt = updatedAt.String
+		}
+		resp.Branches = append(resp.Branches, &branch)
+	}
+
+	return &resp, nil
 }

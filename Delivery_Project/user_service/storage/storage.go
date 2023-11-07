@@ -26,6 +26,8 @@ type UsersI interface {
 	GetList(context.Context, *pb.ListUsersRequest) (*pb.ListUsersResponse, error)
 	Update(context.Context, *pb.UpdateUsersRequest) (string, error)
 	Delete(context.Context, *pb.IdRequest) (string, error)
+
+	GetUserByUserName(context.Context, *pb.GetByUserName) (*pb.Users, error)
 }
 type CouriersI interface {
 	Create(context.Context, *pb.CreateCouriersRequest) (*pb.Response, error)
