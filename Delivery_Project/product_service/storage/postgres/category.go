@@ -87,7 +87,7 @@ func (b *categoryRepo) Get(c context.Context, req *product_service.IdRequest) (r
 			"created_at",
 			"updated_at" 
 		FROM "categories" 
-		WHERE id=$1`
+		WHERE id=$1 and  deleted_at is null`
 
 	var (
 		createdAt sql.NullString
