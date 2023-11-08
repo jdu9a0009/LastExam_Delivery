@@ -73,3 +73,12 @@ func (s *BranchService) Delete(ctx context.Context, req *user_service.IdRequest)
 
 	return &user_service.Response{Message: resp}, nil
 }
+func (b *BranchService) ListActive(ctx context.Context, req *user_service.ListActiveBranchRequest) (*user_service.ListBranchResponse, error) {
+	Branchs, err := b.storage.Branch().GetListActive(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user_service.ListBranchResponse{Branches: Branchs.Branches,
+		Count: Branchs.Count}, nil
+}

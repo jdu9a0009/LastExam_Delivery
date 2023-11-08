@@ -283,7 +283,7 @@ func (b *branchRepo) Delete(c context.Context, req *user_service.IdRequest) (res
 	return "deleted", nil
 }
 
-func (b *branchRepo) GetListActiveBranch(c context.Context, req *user_service.ListActiveBranchRequest) (*user_service.ListBranchResponse, error) {
+func (b *branchRepo) GetListActive(c context.Context, req *user_service.ListActiveBranchRequest) (*user_service.ListBranchResponse, error) {
 
 	var (
 		updatedAt sql.NullString
@@ -293,7 +293,10 @@ func (b *branchRepo) GetListActiveBranch(c context.Context, req *user_service.Li
 		filter    string
 		params    = make(map[string]interface{})
 	)
-
+	if req.Date != "" {
+		filter += " AND :time BETWEEN work_hour_start AND work_hour_end "
+		params["time"] = req.Date
+	}
 	countQuery := `SELECT count(1) FROM "branches" WHERE "deleted_at" IS NULL AND "active"` + filter
 	q, arr := helper.ReplaceQueryParams(countQuery, params)
 	err = b.db.QueryRow(c, q, arr...).Scan(
@@ -303,8 +306,6 @@ func (b *branchRepo) GetListActiveBranch(c context.Context, req *user_service.Li
 	if err != nil {
 		return nil, fmt.Errorf("error while scanning count %w", err)
 	}
-	filter += ` AND '` + req.Date + `'::time BETWEEN work_hour_start AND work_hour_end `
-	params["date"] = req.Date
 
 	query := `
 	SELECT 

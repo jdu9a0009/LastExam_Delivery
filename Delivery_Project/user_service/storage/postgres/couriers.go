@@ -274,3 +274,46 @@ func (b *courierRepo) Delete(c context.Context, req *user_service.IdRequest) (re
 
 	return "deleted", nil
 }
+
+func (c *courierRepo) GetCourierByUserName(ctx context.Context, req *user_service.GetByUserName) (*user_service.Couriers, error) {
+
+	query := `
+	SELECT
+	id,
+	first_name,
+	last_name,
+	branch_id
+	phone,
+	active,
+	login,
+    password,
+	max_order_count,
+	created_at::text,
+	updated_at::text
+	FROM couriers
+	WHERE login=$1 AND active=true`
+
+	resp := c.db.QueryRow(ctx, query, req.Login)
+
+	var courier user_service.Couriers
+
+	err := resp.Scan(
+		&courier.Id,
+		&courier.Firstname,
+		&courier.Lastname,
+		&courier.BranchId,
+		&courier.Phone,
+		&courier.Active,
+		&courier.Login,
+		&courier.Password,
+		&courier.MaxOrderCount,
+		&courier.CreatedAt,
+		&courier.UpdatedAt,
+	)
+
+	if err != nil {
+		return &user_service.Couriers{}, err
+	}
+
+	return &courier, nil
+}

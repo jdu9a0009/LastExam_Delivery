@@ -16,6 +16,7 @@ type BranchI interface {
 	Create(context.Context, *pb.CreateBranchRequest) (*pb.Response, error)
 	Get(context.Context, *pb.IdRequest) (*pb.Branch, error)
 	GetList(context.Context, *pb.ListBranchRequest) (*pb.ListBranchResponse, error)
+	GetListActive(context.Context, *pb.ListActiveBranchRequest) (*pb.ListBranchResponse, error)
 	Update(context.Context, *pb.UpdateBranchRequest) (string, error)
 	Delete(context.Context, *pb.IdRequest) (string, error)
 }
@@ -35,6 +36,8 @@ type CouriersI interface {
 	GetList(context.Context, *pb.ListCouriersRequest) (*pb.ListCouriersResponse, error)
 	Update(context.Context, *pb.UpdateCouriersRequest) (string, error)
 	Delete(context.Context, *pb.IdRequest) (string, error)
+
+	GetCourierByUserName(context.Context, *pb.GetByUserName) (*pb.Couriers, error)
 }
 type ClientsI interface {
 	Create(context.Context, *pb.CreateClientsRequest) (*pb.Response, error)
