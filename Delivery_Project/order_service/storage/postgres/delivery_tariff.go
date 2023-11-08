@@ -341,7 +341,7 @@ func (b *tariffRepo) Delete(c context.Context, req *tariff_service.IdRequest) (r
 	}
 
 	if result.RowsAffected() == 0 {
-		return "", fmt.Errorf("tariff with ID %d not found", req.Id)
+		return "", fmt.Errorf("tariff with ID %d  not found", req.Id)
 	}
 
 	return "deleted", nil

@@ -64,7 +64,7 @@ func (b *orderRepo) Create(c context.Context, req *order_service.CreateOrderRequ
 
 }
 
-func (b *orderRepo) Get(c context.Context, req *order_service.IdRequest) (resp *order_service.Order, err error) {
+func (b *orderRepo) Get(c context.Context, req *order_service.IdStrRequest) (resp *order_service.Order, err error) {
 	query := `
 		SELECT 
 			"id",
@@ -326,16 +326,16 @@ func (b *orderRepo) Delete(c context.Context, req *order_service.IdRequest) (res
 	return "deleted", nil
 }
 
-func (b *orderRepo) GetOrderStatus(c context.Context, req *order_service.IdRequest) (resp *order_service.OrderStatusResponse, err error) {
+func (b *orderRepo) GetOrderStatus(c context.Context, req *order_service.OrderIdRequest) (resp *order_service.OrderStatusResponse, err error) {
 	query := `
 		SELECT "status" FROM "orders"
 		WHERE order_id = $1 AND "deleted_at" IS NULL`
 
 	status := order_service.OrderStatusResponse{}
-	err = b.db.QueryRow(c, query, req.Id).Scan(&status)
+	err = b.db.QueryRow(c, query, req.OrderId).Scan(&status)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("order with ID %d not found", req.Id)
+			return nil, fmt.Errorf("order with ID %s not found", req.OrderId)
 		}
 		return nil, fmt.Errorf("failed to get order status: %w", err)
 	}
@@ -403,7 +403,7 @@ func (b *orderRepo) GetAllAcceptableOrders(c context.Context, req *order_service
 			"created_at",
 			"updated_at" 
 		FROM "orders" 
-		WHERE "order_id"=$1 AND "deleted_at" IS NULL AND  status ='ready_in_branch'  adnd status ='accepted'`
+		WHERE "courier"=$1 AND "deleted_at" IS NULL AND  status ='ready_in_branch'  and status ='accepted'`
 
 	var (
 		createdAt sql.NullString
@@ -461,7 +461,7 @@ func (b *orderRepo) GetAllAcceptedOrders(c context.Context, req *order_service.I
 			"created_at",
 			"updated_at" 
 		FROM "orders" 
-		WHERE "order_id"=$1 AND "deleted_at" IS NULL AND  status ='courier_accepted'  adnd status ='on_way'`
+		WHERE "courier_id"=$1 AND "deleted_at" IS NULL AND  status ='courier_accepted'  and status ='on_way'`
 
 	var (
 		createdAt sql.NullString

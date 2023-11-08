@@ -32,13 +32,13 @@ func (b *OrderService) Create(ctx context.Context, req *order_service.CreateOrde
 	return &order_service.Response{Message: id}, nil
 }
 
-func (b *OrderService) Get(ctx context.Context, req *order_service.IdRequest) (*order_service.Order, error) {
-	reso, err := b.storage.Order().Get(context.Background(), req)
+func (b *OrderService) Get(ctx context.Context, req *order_service.IdStrRequest) (*order_service.Order, error) {
+	resp, err := b.storage.Order().Get(context.Background(), req)
 	if err != nil {
 		return nil, err
 	}
 
-	return reso, nil
+	return resp, nil
 }
 
 func (b *OrderService) List(ctx context.Context, req *order_service.ListOrderRequest) (*order_service.ListOrderResponse, error) {
@@ -76,4 +76,28 @@ func (s *OrderService) Delete(ctx context.Context, req *order_service.IdRequest)
 	}
 
 	return &order_service.Response{Message: resp}, nil
+}
+func (b *OrderService) GetOrderStatus(ctx context.Context, req *order_service.OrderIdRequest) (*order_service.OrderStatusResponse, error) {
+	resp, err := b.storage.Order().GetOrderStatus(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+func (b *OrderService) GetAllAcceptableOrders(ctx context.Context, req *order_service.IdRequest) (*order_service.Order, error) {
+	resp, err := b.storage.Order().GetAllAcceptableOrders(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+func (b *OrderService) GetAllAcceptedOrders(ctx context.Context, req *order_service.IdRequest) (*order_service.Order, error) {
+	resp, err := b.storage.Order().GetAllAcceptedOrders(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

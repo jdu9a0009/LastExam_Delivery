@@ -12,11 +12,14 @@ type StorageI interface {
 
 type OrderI interface {
 	Create(context.Context, *pb.CreateOrderRequest) (string, error)
-	Get(context.Context, *pb.IdRequest) (*pb.Order, error)
+	Get(context.Context, *pb.IdStrRequest) (*pb.Order, error)
 	GetList(context.Context, *pb.ListOrderRequest) (*pb.ListOrderResponse, error)
 	Update(context.Context, *pb.UpdateOrderRequest) (string, error)
 	UpdateStatus(context.Context, *pb.UpdateOrderStatusRequest) (string, error)
 	Delete(context.Context, *pb.IdRequest) (string, error)
+	GetOrderStatus(context.Context, *pb.OrderIdRequest) (*pb.OrderStatusResponse, error)
+	GetAllAcceptableOrders(context.Context, *pb.IdRequest) (*pb.Order, error)
+	GetAllAcceptedOrders(context.Context, *pb.IdRequest) (*pb.Order, error)
 }
 
 type DeliveryTariffI interface {
