@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package user_service;
 option go_package = "genproto/user_service";
+import "users.proto";
 import "branch.proto";
 
 service CourierService {
@@ -10,6 +11,8 @@ service CourierService {
     rpc List(ListCouriersRequest) returns (ListCouriersResponse) {}
     rpc Update(UpdateCouriersRequest) returns (Response) {}
     rpc Delete(IdRequest) returns (Response) {}
+    rpc GetCourierByUserName (GetByUserName) returns (Couriers) {}
+
 }
 
 message CreateCouriersRequest {

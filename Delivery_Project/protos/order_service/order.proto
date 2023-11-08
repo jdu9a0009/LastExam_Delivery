@@ -6,7 +6,7 @@ option go_package = "genproto/order_service";
 
 service OrderService {
     rpc Create(CreateOrderRequest) returns (Response) {}
-    rpc Get(IdRequest) returns (Order) {}
+    rpc Get(IdStrRequest) returns (Order) {}
     rpc List(ListOrderRequest) returns (ListOrderResponse) {}
     rpc Update(UpdateOrderRequest) returns (Response) {}
     rpc UpdateStatus(UpdateOrderStatusRequest) returns (Response) {}
@@ -94,8 +94,11 @@ message Response {
 message IdRequest {
     int32 id = 1;
 }
+message IdStrRequest {
+    string id = 1;
+}
 message OrderIdRequest {
-    int32 order_id = 1;
+    string order_id = 1;
 }
 message OrderStatusResponse {
     string status = 1;
