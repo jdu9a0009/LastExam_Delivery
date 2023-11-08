@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type OrderServiceClient interface {
 	Create(ctx context.Context, in *CreateOrderRequest, opts ...grpc.CallOption) (*Response, error)
-	Get(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error)
+	Get(ctx context.Context, in *IdStrRequest, opts ...grpc.CallOption) (*Order, error)
 	List(ctx context.Context, in *ListOrderRequest, opts ...grpc.CallOption) (*ListOrderResponse, error)
 	Update(ctx context.Context, in *UpdateOrderRequest, opts ...grpc.CallOption) (*Response, error)
 	UpdateStatus(ctx context.Context, in *UpdateOrderStatusRequest, opts ...grpc.CallOption) (*Response, error)
@@ -50,7 +50,7 @@ func (c *orderServiceClient) Create(ctx context.Context, in *CreateOrderRequest,
 	return out, nil
 }
 
-func (c *orderServiceClient) Get(ctx context.Context, in *IdRequest, opts ...grpc.CallOption) (*Order, error) {
+func (c *orderServiceClient) Get(ctx context.Context, in *IdStrRequest, opts ...grpc.CallOption) (*Order, error) {
 	out := new(Order)
 	err := c.cc.Invoke(ctx, "/order_service.OrderService/Get", in, out, opts...)
 	if err != nil {
@@ -127,7 +127,7 @@ func (c *orderServiceClient) GetAllAcceptableOrders(ctx context.Context, in *IdR
 // for forward compatibility
 type OrderServiceServer interface {
 	Create(context.Context, *CreateOrderRequest) (*Response, error)
-	Get(context.Context, *IdRequest) (*Order, error)
+	Get(context.Context, *IdStrRequest) (*Order, error)
 	List(context.Context, *ListOrderRequest) (*ListOrderResponse, error)
 	Update(context.Context, *UpdateOrderRequest) (*Response, error)
 	UpdateStatus(context.Context, *UpdateOrderStatusRequest) (*Response, error)
@@ -145,7 +145,7 @@ type UnimplementedOrderServiceServer struct {
 func (UnimplementedOrderServiceServer) Create(context.Context, *CreateOrderRequest) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
-func (UnimplementedOrderServiceServer) Get(context.Context, *IdRequest) (*Order, error) {
+func (UnimplementedOrderServiceServer) Get(context.Context, *IdStrRequest) (*Order, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 func (UnimplementedOrderServiceServer) List(context.Context, *ListOrderRequest) (*ListOrderResponse, error) {
@@ -201,7 +201,7 @@ func _OrderService_Create_Handler(srv interface{}, ctx context.Context, dec func
 }
 
 func _OrderService_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(IdRequest)
+	in := new(IdStrRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func _OrderService_Get_Handler(srv interface{}, ctx context.Context, dec func(in
 		FullMethod: "/order_service.OrderService/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OrderServiceServer).Get(ctx, req.(*IdRequest))
+		return srv.(OrderServiceServer).Get(ctx, req.(*IdStrRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

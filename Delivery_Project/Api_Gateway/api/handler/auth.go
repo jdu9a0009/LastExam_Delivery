@@ -29,8 +29,8 @@ type LoginRes struct {
 // @Tags         users
 // @Accept       json
 // @Produce      json
-// @Param        user    body     models.LoginReq  true  "data of user"
-// @Success      200  {object}  models.LoginRes
+// @Param        user    body     LoginReq  true  "data of user"
+// @Success      200  {object}  LoginRes
 // @Failure      400  {object}  response.ErrorResp
 // @Failure      404  {object}  response.ErrorResp
 // @Failure      500  {object}  response.ErrorResp
@@ -59,7 +59,7 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	if req.Role == "courier" {
-		resp, err := h.grpcClient.CourierService().GetCourierByUserName(c.Request.Context(), &user_service.GetByUserName{
+		resp, err := h.services.CourierService().GetCourierByUserName(c.Request.Context(), &user_service.GetByUserName{
 			Login: req.Login,
 		})
 
@@ -93,7 +93,7 @@ func (h *Handler) Login(c *gin.Context) {
 
 	} else if req.Role == "user" {
 
-		resp, err := h.grpcClient.UserService().GetUserByUserName(c.Request.Context(), &user_service.GetByUserName{
+		resp, err := h.services.UserService().GetUserByUserName(c.Request.Context(), &user_service.GetByUserName{
 			Login: req.Login,
 		})
 

@@ -1,4 +1,18 @@
 definitions:
+  handler.LoginReq:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  handler.LoginRes:
+    properties:
+      token:
+        type: string
+    type: object
   handler.Response:
     properties:
       data: {}
@@ -286,6 +300,13 @@ definitions:
       title:
         type: string
     type: object
+  response.ErrorResp:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   user_service.Branch:
     properties:
       active:
@@ -566,8 +587,6 @@ definitions:
         type: integer
       created_at:
         type: string
-      deleted_at:
-        type: string
       firstname:
         type: string
       id:
@@ -586,6 +605,40 @@ definitions:
 info:
   contact: {}
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: api for create users
+      parameters:
+      - description: data of user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LoginRes'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResp'
+      summary: create user
+      tags:
+      - users
   /v1/branch:
     get:
       consumes:
@@ -650,6 +703,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Branch
       tags:
       - branch
@@ -711,7 +766,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -746,6 +801,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - branch
@@ -793,6 +850,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a branch by ID
       tags:
       - branch
@@ -846,9 +905,68 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing branch
       tags:
       - branch
+  /v1/branch/active:
+    get:
+      consumes:
+      - application/json
+      description: get allactive branch
+      parameters:
+      - default: 10
+        description: limit for response
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        description: page for response
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user_service.ListBranchResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: GetAll Active branch
+      tags:
+      - logic
   /v1/category:
     get:
       consumes:
@@ -905,6 +1023,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Category
       tags:
       - category
@@ -1001,6 +1121,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - category
@@ -1048,6 +1170,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a category by ID
       tags:
       - category
@@ -1101,6 +1225,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing category
       tags:
       - category
@@ -1204,6 +1330,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Clients
       tags:
       - client
@@ -1300,6 +1428,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - client
@@ -1347,6 +1477,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a client by ID
       tags:
       - client
@@ -1400,6 +1532,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing client
       tags:
       - client
@@ -1467,6 +1601,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Courier
       tags:
       - courier
@@ -1563,6 +1699,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - courier
@@ -1610,6 +1748,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a courier by ID
       tags:
       - courier
@@ -1663,6 +1803,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing courier
       tags:
       - courier
@@ -1726,6 +1868,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll DeliveryTariff
       tags:
       - delivery_tariff
@@ -1822,6 +1966,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - delivery_tariff
@@ -1869,6 +2015,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a delivery_tariff by ID
       tags:
       - delivery_tariff
@@ -1922,9 +2070,108 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing delivery_tariff
       tags:
       - delivery_tariff
+  /v1/logic:
+    get:
+      consumes:
+      - application/json
+      description: Update order status
+      parameters:
+      - description: order_id for response
+        in: query
+        name: order_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: Update order status
+      tags:
+      - logic
+  /v1/logic/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get accepted and not accepted orders using courier_id
+      parameters:
+      - description: Courier ID to retrieve
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/order_service.Order'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Get a courier by ID
+      tags:
+      - logic
   /v1/order:
     get:
       consumes:
@@ -2015,6 +2262,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Order
       tags:
       - order
@@ -2063,6 +2312,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Create a new order
       tags:
       - order
@@ -2111,6 +2362,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - order
@@ -2158,6 +2411,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a order by ID
       tags:
       - order
@@ -2211,6 +2466,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing order
       tags:
       - order
@@ -2276,6 +2533,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll Product
       tags:
       - product
@@ -2324,6 +2583,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Create a new product
       tags:
       - product
@@ -2372,6 +2633,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - product
@@ -2419,6 +2682,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a product by ID
       tags:
       - product
@@ -2472,6 +2737,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing product
       tags:
       - product
@@ -2539,6 +2806,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: GetAll User
       tags:
       - user
@@ -2635,6 +2904,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Delete a Catgory
       tags:
       - user
@@ -2682,6 +2953,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Get a user by ID
       tags:
       - user
@@ -2735,6 +3008,8 @@ paths:
                 data:
                   type: string
               type: object
+      security:
+      - ApiKeyAuth: []
       summary: Update an existing user
       tags:
       - user

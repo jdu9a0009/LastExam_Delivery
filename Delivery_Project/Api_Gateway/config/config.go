@@ -83,7 +83,7 @@ func Load() Config {
 	config.OrderGRPCPort = cast.ToString(getOrReturnDefaultValue("ORDER_GRPC_PORT", ":50053"))
 
 	config.UserServiceHost = cast.ToString(getOrReturnDefaultValue("USER_SERVICE_HOST", "localhost"))
-	config.UserGRPCPort = cast.ToString(getOrReturnDefaultValue("USER_GRPC_PORT", ":50053"))
+	config.UserGRPCPort = cast.ToString(getOrReturnDefaultValue("USER_GRPC_PORT", ":50051"))
 
 	config.PostgresMaxConnections = cast.ToInt32(getOrReturnDefaultValue("POSTGRES_MAX_CONNECTIONS", 30))
 

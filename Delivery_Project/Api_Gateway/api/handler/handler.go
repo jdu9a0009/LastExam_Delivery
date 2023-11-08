@@ -2,7 +2,7 @@ package handler
 
 import (
 	"api-gateway-service/config"
-	grpc_client "api-gateway-service/grpc"
+	// grpc_client "api-gateway-service/grpc"
 	"api-gateway-service/pkg/logger"
 	"api-gateway-service/services"
 
@@ -13,10 +13,10 @@ import (
 )
 
 type Handler struct {
-	cfg        config.Config
-	log        logger.LoggerI
-	services   services.ServiceManagerI
-	grpcClient grpc_client.GrpcClientI
+	cfg      config.Config
+	log      logger.LoggerI
+	services services.ServiceManagerI
+	// grpcClient grpc_client.GrpcClientI
 }
 
 func NewHandler(cfg config.Config, log logger.LoggerI, srvc services.ServiceManagerI) *Handler {

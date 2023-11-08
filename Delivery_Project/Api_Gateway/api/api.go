@@ -79,6 +79,14 @@ func SetUpApi(r *gin.Engine, h *handler.Handler, cfg config.Config) {
 	v1.PUT("/courier/:id", h.UpdateCourier)
 	v1.DELETE("/courier/:id", h.DeleteCourier)
 
+	// Logic api
+	v1.GET("/logic", h.GetCourierOrders)
+	v1.PUT("/logic/:id", h.UpdateOrderStatus)
+	v1.GET("/branch/active", h.GetListActiveBranch)
+	v1.GET("/courier/active-orders/list", h.CourierGetOrder)
+	v1.GET("/courier/delete_order/:id", h.DeleteCourierInOrder)
+	v1.GET("/courier/get_order/:id", h.GetCourierOrders)
+
 	url := ginSwagger.URL("swagger/doc.json") // The url pointing to API definition
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 }

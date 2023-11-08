@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// task 4 and 10 is here
 // CreateOrder godoc
 // @Security ApiKeyAuth
 // @Router       /v1/order [post]
@@ -200,12 +201,7 @@ func (h *Handler) GetListOrder(ctx *gin.Context) {
 func (h *Handler) GetOrder(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 
-	id, err := strconv.ParseInt(idStr, 10, 32)
-	if err != nil {
-		h.handlerResponse(ctx, "error branch GetById", http.StatusBadRequest, err.Error())
-		return
-	}
-	resp, err := h.services.OrderService().Get(ctx.Request.Context(), &order_service.IdRequest{Id: int32(id)})
+	resp, err := h.services.OrderService().Get(ctx.Request.Context(), &order_service.IdStrRequest{Id: idStr})
 	if err != nil {
 		h.handlerResponse(ctx, "error order GetById", http.StatusBadRequest, err.Error())
 		return
